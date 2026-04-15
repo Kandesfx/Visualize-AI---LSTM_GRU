@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSTM Demo - Phân Tích Cảm Xúc</title>
+    <meta name="description" content="Demo trực quan hoạt động bên trong LSTM cell qua bài toán phân tích cảm xúc">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/demo.css">
+    <link rel="stylesheet" href="/css/cell.css">
+</head>
+<body>
+    <div class="demo-page" id="demo-page">
+
+        <!-- Back to Home Button (always visible) -->
+        <a href="/" class="back-home-btn" id="back-home-btn" title="Về Trang Chủ (Esc)">
+            <span>←</span> Trang Chủ
+        </a>
+
+        <!-- Keyboard Shortcuts Hint (toggle with ?) -->
+        <div class="shortcuts-overlay" id="shortcuts-overlay">
+            <div class="shortcuts-card glass-card">
+                <h3>⌨️ Phím Tắt</h3>
+                <div class="shortcuts-grid">
+                    <kbd>→</kbd><span>Bước tiếp</span>
+                    <kbd>←</kbd><span>Bước trước</span>
+                    <kbd>Space</kbd><span>Bước tiếp</span>
+                    <kbd>A</kbd><span>Tự động chạy</span>
+                    <kbd>1</kbd><span>Cơ Bản</span>
+                    <kbd>2</kbd><span>Chi Tiết</span>
+                    <kbd>3</kbd><span>Nâng Cao</span>
+                    <kbd>+</kbd><span>Tăng tốc</span>
+                    <kbd>-</kbd><span>Giảm tốc</span>
+                    <kbd>R</kbd><span>Reset</span>
+                    <kbd>Esc</kbd><span>Trang chủ</span>
+                    <kbd>?</kbd><span>Phím tắt</span>
+                </div>
+                <button class="btn btn-secondary" onclick="toggleShortcuts()" style="margin-top:16px;">Đóng</button>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="spinner"></div>
+            <div class="loading-text">Đang phân tích...</div>
+        </div>
+
+        <!-- Phase 1: Input Section -->
+        <section class="input-section" id="input-section">
+            <div class="demo-header" id="demo-header">
+                <div style="font-size:2.5rem;margin-bottom:8px;">🧠</div>
+                <h1 class="demo-title">
+                    <span class="text-gradient">LSTM</span> - Phân Tích Cảm Xúc
+                </h1>
+                <p class="demo-subtitle">Long Short-Term Memory · 4 Cổng · Cell State + Hidden State</p>
+            </div>
+
+            <div class="input-form" id="input-form">
+                <div class="input-wrapper">
+                    <textarea class="input-textarea" id="input-text" rows="2"
+                        placeholder="Nhập câu feedback sinh viên tại đây..."></textarea>
+                </div>
+                <button class="btn btn-primary analyze-btn" id="analyze-btn" onclick="startAnalysis()">
+                    <span>🚀</span>
+                    <span class="btn-text-full">Phân Tích</span>
+                    <span>→</span>
+                </button>
+                <div class="quick-examples" id="quick-examples">
+                    <div class="examples-title">Thử nhanh:</div>
+                    <div class="example-chips">
+                        <div class="example-chip" onclick="fillExample(this)">Thầy giảng bài rất dễ hiểu</div>
+                        <div class="example-chip" onclick="fillExample(this)">Môn học này quá khó và nhàm chán</div>
+                        <div class="example-chip" onclick="fillExample(this)">Giảng viên nhiệt tình hỗ trợ sinh viên</div>
+                        <div class="example-chip" onclick="fillExample(this)">Nội dung môn học thiếu thực tế</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Demo Content (hidden initially) -->
+        <div class="demo-content" id="demo-content">
+
+            <!-- Tokens + Embeddings combined row -->
+            <section class="tokens-section" id="tokens-section">
+                <div class="section-label">📝 Tách từ & Nhúng từ (Tokenization → Embedding)</div>
+                <div class="tokens-embed-row" id="tokens-embed-row"></div>
+            </section>
+
+            <!-- Flying token/vector indicator (absolute positioned) -->
+            <div class="flying-token" id="flying-token" style="display:none;">
+                <span class="flying-word" id="flying-word"></span>
+            </div>
+            <div class="flying-vector" id="flying-vector" style="display:none;">
+                <span class="flying-vec-text" id="flying-vec-text"></span>
+            </div>
+
+            <!-- Cell Processing Section — Carousel -->
+            <section class="cell-section" id="cell-section" style="display:none;">
+                <div class="section-label">⚙️ Xử lý qua LSTM Cells</div>
+
+                <!-- Sentence context — full sentence with active word highlighted -->
+                <div class="sentence-context" id="sentence-context"></div>
+
+                <!-- Cell chain layout: left minis | active cell | right minis -->
+                <div class="cell-chain" id="cell-chain">
+                    <div class="chain-left" id="chain-left"></div>
+                    <div class="chain-connector chain-conn-left" id="chain-conn-left" style="display:none;">
+                        <span class="connector-arrow">→</span>
+                        <div class="connector-values" id="conn-left-vals"></div>
+                    </div>
+                    <div class="chain-active" id="chain-active">
+                        <div class="cell-slide-inner" id="active-cell-inner">
+                            <div class="cell-header">
+                                <span class="cell-title" id="active-cell-title">Cell t=1</span>
+                                <span class="cell-token-label" id="active-cell-token">—</span>
+                            </div>
+                            <div class="cell-svg-container" id="active-cell-svg"></div>
+                        </div>
+                    </div>
+                    <div class="chain-connector chain-conn-right" id="chain-conn-right" style="display:none;">
+                        <span class="connector-arrow">→</span>
+                        <div class="connector-values" id="conn-right-vals"></div>
+                    </div>
+                    <div class="chain-right" id="chain-right"></div>
+                </div>
+
+                <!-- Mini Cell Bar (simplified, synced with carousel) -->
+                <div class="mini-cell-bar" id="mini-cell-bar">
+                    <div class="mini-cells" id="mini-cells"></div>
+                </div>
+            </section>
+
+            <!-- Output Section -->
+            <section class="output-section" id="output-section">
+                <div class="output-card glass-card">
+                    <div class="output-title">📊 Kết quả phân tích</div>
+                    <div class="prediction-result">
+                        <div class="prediction-bar">
+                            <span class="prediction-label">😊</span>
+                            <div class="prediction-bar-track">
+                                <div class="prediction-bar-fill positive" id="bar-positive"></div>
+                            </div>
+                            <span class="prediction-percent" id="pct-positive">0%</span>
+                        </div>
+                        <div class="prediction-bar">
+                            <span class="prediction-label">😔</span>
+                            <div class="prediction-bar-track">
+                                <div class="prediction-bar-fill negative" id="bar-negative"></div>
+                            </div>
+                            <span class="prediction-percent" id="pct-negative">0%</span>
+                        </div>
+                    </div>
+                    <div class="prediction-conclusion" id="prediction-conclusion"></div>
+                    <div class="output-actions">
+                        <button class="btn btn-primary" onclick="resetDemo()">🔄 Thử Câu Khác</button>
+                        <a href="/" class="btn btn-secondary">🏠 Trang Chủ</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Floating Controls Panel -->
+        <div class="floating-panel" id="floating-panel" style="display:none;">
+            <div class="panel-handle" id="panel-handle">
+                <span class="panel-handle-dots">⋮⋮</span>
+            </div>
+            <button class="panel-toggle" id="panel-toggle" onclick="togglePanel()" title="Thu gọn/Mở rộng">◁</button>
+            <div class="panel-body" id="panel-body">
+                <div class="panel-section controls-navigation">
+                    <button class="btn-icon" id="btn-prev" onclick="prevStep()" title="Bước trước (←)">◀</button>
+                    <span class="step-display" id="step-display">Bước 0/7</span>
+                    <button class="btn-icon" id="btn-next" onclick="nextStep()" title="Bước tiếp (→)">▶</button>
+                </div>
+                <div class="panel-section controls-speed">
+                    <span class="speed-label">🐢</span>
+                    <input type="range" class="speed-slider" id="speed-slider" min="0.5" max="3" step="0.5" value="1" onchange="changeSpeed(this.value)">
+                    <span class="speed-label">🐇</span>
+                    <span class="speed-value" id="speed-value">1x</span>
+                </div>
+                <div class="panel-section">
+                    <button class="btn btn-secondary btn-sm" id="btn-autoplay" onclick="toggleAutoPlay()">
+                        ▶▶ Tự Động
+                    </button>
+                </div>
+                <div class="panel-section controls-detail">
+                    <button class="detail-btn active" onclick="setDetail('basic', this)" title="Phím 1">Cơ Bản</button>
+                    <button class="detail-btn" onclick="setDetail('normal', this)" title="Phím 2">Chi Tiết</button>
+                    <button class="detail-btn" onclick="setDetail('advanced', this)" title="Phím 3">Nâng Cao</button>
+                </div>
+                <div class="panel-section panel-shortcuts-hint">
+                    <button class="btn-icon btn-shortcuts" onclick="toggleShortcuts()" title="Phím tắt (?)">⌨</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gate Tooltip -->
+        <div class="tooltip" id="gate-tooltip">
+            <div class="tooltip-title" id="tooltip-title"></div>
+            <div class="tooltip-desc" id="tooltip-desc"></div>
+            <div class="tooltip-formula" id="tooltip-formula"></div>
+            <div class="tooltip-value" id="tooltip-value"></div>
+            <div class="tooltip-interpret" id="tooltip-interpret"></div>
+        </div>
+
+        <!-- Embedding Modal -->
+        <div class="modal-overlay" id="embed-modal" onclick="closeEmbedModal(event)">
+            <div class="modal-content" style="position:relative;">
+                <button class="modal-close" onclick="closeEmbedModal()">×</button>
+                <h3 id="modal-token-title" style="margin-bottom:16px;"></h3>
+                <div id="modal-stats" style="margin-bottom:16px; font-size:0.85rem; color:var(--text-secondary);"></div>
+                <div id="modal-heatmap" style="display:flex; flex-wrap:wrap; gap:2px; margin-bottom:16px;"></div>
+                <div id="modal-values" class="mono" style="font-size:0.72rem; color:var(--text-secondary); max-height:200px; overflow-y:auto; word-break:break-all;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/core/utils.js"></script>
+    <script src="/js/core/api.js"></script>
+    <script src="/js/core/animation.js"></script>
+    <script src="/js/core/floatingPanel.js"></script>
+    <script src="/js/lstm/lstmDemo.js"></script>
+</body>
+</html>

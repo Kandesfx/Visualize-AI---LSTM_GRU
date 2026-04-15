@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo LSTM & GRU - Phân Tích Cảm Xúc</title>
+    <meta name="description" content="Demo trực quan hoạt động bên trong LSTM và GRU qua bài toán phân tích cảm xúc feedback sinh viên Việt Nam">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/landing.css">
+</head>
+<body>
+    <div class="landing-page">
+        <!-- Animated Background -->
+        <div class="landing-bg"></div>
+        
+        <!-- Floating Particles -->
+        <div class="particles" id="particles"></div>
+
+        <!-- Header -->
+        <header class="landing-header animate-fade-in-up">
+            <div class="landing-icon">🧠</div>
+            <h1 class="landing-title">
+                Demo <span class="highlight">Mạng Nơ-ron Hồi Quy</span>
+            </h1>
+            <p class="landing-subtitle">
+                Trực quan hoá cách LSTM & GRU xử lý ngôn ngữ tự nhiên qua bài toán phân tích cảm xúc feedback sinh viên Việt Nam
+            </p>
+        </header>
+
+        <!-- Model Cards -->
+        <div class="cards-container">
+            <!-- LSTM Card -->
+            <a href="/lstm" class="model-card glass-card lstm-card" id="lstm-card">
+                <div class="card-badge">Kiến trúc 1</div>
+                <h2 class="card-title">LSTM</h2>
+                <p class="card-full-name">Long Short-Term Memory</p>
+                <ul class="card-features">
+                    <li>
+                        <span class="feature-icon">🔶</span>
+                        <span>3 cổng: Forget, Input, Output</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">📦</span>
+                        <span>Cell State + Hidden State</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">⚡</span>
+                        <span>7 bước xử lý mỗi cell</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">🎯</span>
+                        <span>Nhớ thông tin dài hạn tốt</span>
+                    </li>
+                </ul>
+                <div class="card-cta">
+                    Khám Phá <span class="cta-arrow">→</span>
+                </div>
+            </a>
+
+            <!-- GRU Card -->
+            <a href="/gru" class="model-card glass-card gru-card" id="gru-card">
+                <div class="card-badge">Kiến trúc 2</div>
+                <h2 class="card-title">GRU</h2>
+                <p class="card-full-name">Gated Recurrent Unit</p>
+                <ul class="card-features">
+                    <li>
+                        <span class="feature-icon">🔷</span>
+                        <span>2 cổng: Reset, Update</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">📦</span>
+                        <span>Chỉ Hidden State</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">⚡</span>
+                        <span>5 bước xử lý mỗi cell</span>
+                    </li>
+                    <li>
+                        <span class="feature-icon">🚀</span>
+                        <span>Nhanh hơn, ít tham số hơn</span>
+                    </li>
+                </ul>
+                <div class="card-cta">
+                    Khám Phá <span class="cta-arrow">→</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Footer Hint -->
+        <footer class="landing-footer animate-fade-in">
+            <div class="landing-hint">
+                <span class="hint-icon">💡</span>
+                <span>Nhập một câu feedback → xem AI xử lý từng bước bên trong</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Create floating particles
+        const particlesEl = document.getElementById('particles');
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.width = (Math.random() * 4 + 1) + 'px';
+            particle.style.height = particle.style.width;
+            particle.style.animationDuration = (Math.random() * 15 + 10) + 's';
+            particle.style.animationDelay = (Math.random() * 10) + 's';
+            particle.style.opacity = Math.random() * 0.4 + 0.1;
+            particlesEl.appendChild(particle);
+        }
+
+        // Stagger card animations
+        const cards = document.querySelectorAll('.model-card');
+        cards.forEach((card, i) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 300 + i * 200);
+        });
+    </script>
+</body>
+</html>

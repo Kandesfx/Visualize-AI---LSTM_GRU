@@ -1,0 +1,263 @@
+/* =============================================
+   Cell SVG Styles — V2 Enhanced
+   ============================================= */
+
+.cell-svg { width: 100%; max-width: 800px; height: auto; }
+
+/* =============================================
+   State Lanes
+   ============================================= */
+.state-lane {
+    fill: none;
+    stroke-linecap: round;
+}
+
+/* Cell State lane — thick, conveyor belt effect */
+.cell-state-lane {
+    stroke: var(--cell-state);
+    stroke-width: 5;
+    opacity: 0.3;
+    stroke-dasharray: 12 6;
+    animation: conveyorBelt 3s linear infinite paused;
+}
+.cell-state-lane.active {
+    opacity: 0.9;
+    filter: drop-shadow(0 0 8px var(--cell-state));
+    animation-play-state: running;
+}
+.cell-state-lane.pulse {
+    animation: conveyorBelt 3s linear infinite, conveyorPulse 0.8s ease-out;
+}
+
+@keyframes conveyorBelt {
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: -36; }
+}
+
+@keyframes conveyorPulse {
+    0% { stroke-width: 5; filter: drop-shadow(0 0 8px var(--cell-state)); }
+    50% { stroke-width: 8; filter: drop-shadow(0 0 20px var(--cell-state)); }
+    100% { stroke-width: 5; filter: drop-shadow(0 0 8px var(--cell-state)); }
+}
+
+/* Hidden State lane */
+.hidden-state-lane {
+    stroke: var(--hidden-state);
+    stroke-width: 4;
+    opacity: 0.25;
+    stroke-dasharray: 8 4;
+    animation: conveyorHidden 4s linear infinite paused;
+}
+.hidden-state-lane.active {
+    opacity: 0.8;
+    filter: drop-shadow(0 0 6px var(--hidden-state));
+    animation-play-state: running;
+}
+
+@keyframes conveyorHidden {
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: -24; }
+}
+
+/* =============================================
+   Pipes / Connections
+   ============================================= */
+.pipe {
+    fill: none;
+    stroke: #2d3436;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: all 0.5s ease;
+}
+
+.pipe.active-forget { stroke: var(--forget-gate); filter: drop-shadow(0 0 5px var(--forget-gate)); stroke-width: 3; }
+.pipe.active-input { stroke: var(--input-gate); filter: drop-shadow(0 0 5px var(--input-gate)); stroke-width: 3; }
+.pipe.active-candidate { stroke: var(--candidate); filter: drop-shadow(0 0 5px var(--candidate)); stroke-width: 3; }
+.pipe.active-output { stroke: var(--output-gate); filter: drop-shadow(0 0 5px var(--output-gate)); stroke-width: 3; }
+.pipe.active-cell { stroke: var(--cell-state); filter: drop-shadow(0 0 5px var(--cell-state)); stroke-width: 3; }
+.pipe.active-hidden { stroke: var(--hidden-state); filter: drop-shadow(0 0 5px var(--hidden-state)); stroke-width: 3; }
+
+/* =============================================
+   Gate Nodes
+   ============================================= */
+.gate-node {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.gate-node:hover { filter: brightness(1.3); }
+
+.gate-bg {
+    rx: 14; ry: 14;
+    transition: all 0.4s ease;
+}
+
+.gate-bg.forget { fill: rgba(255, 107, 107, 0.12); stroke: var(--forget-gate); stroke-width: 1.5; }
+.gate-bg.input  { fill: rgba(38, 222, 129, 0.12); stroke: var(--input-gate); stroke-width: 1.5; }
+.gate-bg.candidate { fill: rgba(69, 183, 209, 0.12); stroke: var(--candidate); stroke-width: 1.5; }
+.gate-bg.output { fill: rgba(165, 94, 234, 0.12); stroke: var(--output-gate); stroke-width: 1.5; }
+.gate-bg.reset  { fill: rgba(243, 156, 18, 0.12); stroke: var(--reset-gate); stroke-width: 1.5; }
+.gate-bg.update { fill: rgba(155, 89, 182, 0.12); stroke: var(--update-gate); stroke-width: 1.5; }
+
+.gate-bg.active { stroke-width: 2.5; }
+.gate-bg.forget.active  { fill: rgba(255, 107, 107, 0.3); filter: drop-shadow(0 0 12px rgba(255, 107, 107, 0.6)); }
+.gate-bg.input.active   { fill: rgba(38, 222, 129, 0.3); filter: drop-shadow(0 0 12px rgba(38, 222, 129, 0.6)); }
+.gate-bg.candidate.active { fill: rgba(69, 183, 209, 0.3); filter: drop-shadow(0 0 12px rgba(69, 183, 209, 0.6)); }
+.gate-bg.output.active  { fill: rgba(165, 94, 234, 0.3); filter: drop-shadow(0 0 12px rgba(165, 94, 234, 0.6)); }
+.gate-bg.reset.active   { fill: rgba(243, 156, 18, 0.3); filter: drop-shadow(0 0 12px rgba(243, 156, 18, 0.6)); }
+.gate-bg.update.active  { fill: rgba(155, 89, 182, 0.3); filter: drop-shadow(0 0 12px rgba(155, 89, 182, 0.6)); }
+
+/* Gate text */
+.gate-label {
+    fill: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 11px; font-weight: 700;
+    text-anchor: middle;
+    pointer-events: none;
+}
+
+.gate-sublabel {
+    fill: var(--text-secondary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-anchor: middle;
+    pointer-events: none;
+}
+
+.gate-value {
+    fill: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    text-anchor: middle;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+.gate-value.visible { opacity: 1; }
+
+/* =============================================
+   Activation Function Badges (σ, tanh)
+   ============================================= */
+.activation-badge {
+    fill: rgba(255, 255, 255, 0.06);
+    stroke: rgba(255, 255, 255, 0.15);
+    stroke-width: 1;
+    rx: 10; ry: 10;
+}
+
+.activation-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+}
+
+.activation-text.sigmoid { fill: var(--forget-gate); }
+.activation-text.tanh-fn { fill: var(--candidate); }
+
+/* =============================================
+   Operator Nodes (×, +)
+   ============================================= */
+.operator-bg {
+    fill: var(--bg-tertiary);
+    stroke: var(--border-medium);
+    stroke-width: 1.5;
+    transition: all 0.4s ease;
+}
+.operator-bg.active {
+    fill: var(--bg-glass-hover);
+    stroke: var(--accent-primary);
+    filter: drop-shadow(0 0 10px rgba(108, 99, 255, 0.5));
+}
+
+.operator-text {
+    fill: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px; font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+}
+
+/* =============================================
+   Cell State Battery Bar
+   ============================================= */
+.battery-outer {
+    fill: rgba(255, 255, 255, 0.04);
+    stroke: var(--border-medium);
+    stroke-width: 1.5;
+    rx: 4; ry: 4;
+}
+
+.battery-fill {
+    fill: var(--cell-state);
+    rx: 2; ry: 2;
+    transition: all 0.8s ease;
+    opacity: 0.15;
+}
+
+.battery-label {
+    fill: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+}
+
+.battery-pct {
+    fill: rgba(255, 255, 255, 0.9);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    pointer-events: none;
+}
+
+.battery-value {
+    fill: var(--text-secondary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+}
+
+.battery-indicator {
+    font-family: system-ui, sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    fill: var(--text-muted);
+}
+
+/* =============================================
+   Cell State / Hidden State Bars
+   ============================================= */
+.cell-state-bar { fill: var(--cell-state); opacity: 0.4; }
+.hidden-state-bar { fill: var(--hidden-state); opacity: 0.4; }
+
+/* =============================================
+   Labels
+   ============================================= */
+.cell-label {
+    fill: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 10px; font-weight: 500;
+    text-anchor: middle;
+}
+
+.state-label {
+    fill: var(--text-secondary);
+    font-family: 'Inter', sans-serif;
+    font-size: 11px; font-weight: 600;
+}
+
+.annotation-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    text-anchor: middle;
+    opacity: 0.5;
+}
+
+/* Step indicator */
+.step-indicator {
+    fill: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-anchor: end;
+}
